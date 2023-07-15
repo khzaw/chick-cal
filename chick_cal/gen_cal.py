@@ -4,11 +4,6 @@ import arrow
 from ics import Calendar, Event
 from ics.alarm import DisplayAlarm
 
-START_DATE = arrow.get(2023, 7, 24, tzinfo="Asia/Singapore").replace(hour=15, minute=30)
-END_DATE = arrow.get(2023, 10, 15)
-
-WEEKS = 7
-
 CLASS_TYPES = {
     0: "Workshop",
     1: "01 Lecture",
@@ -17,7 +12,7 @@ CLASS_TYPES = {
 
 
 def gen_name(code: str, idx: int, class_type: int) -> str:
-    PREFIX = f"CU_TRI223_FT_${code}_S{idx}_"
+    PREFIX = f"CU_TRI223_FT_{code}_S{idx}_"
     if class_type == 1:
         return PREFIX + "Lec/1"
     else:
@@ -94,14 +89,15 @@ def gen_db(c: Calendar) -> Calendar:
 
 
 def gen_workshops(c: Calendar) -> Calendar:
+    START_DATE = arrow.get(2023, 7, 24, tzinfo="Asia/Singapore").replace(hour=15, minute=30)
     c.events.add(gen_event(name="CU Referencing Workshop", desc="Dr Ng Jia Yun Florence",
                            start_time=START_DATE,
                            duration=3))
     c.events.add(gen_event(name="GNet", desc="",
-                           start_time=START_DATE.replace(hour=10, minute=0),
+                           start_time=START_DATE.replace(day=31, month=7, hour=10, minute=0),
                            duration=2))
     c.events.add(gen_event(name="Marketing Intensive Workshop", desc="Dr Liow Li Sa Melissa",
-                           start_time=START_DATE.replace(day=23, month=8, hour=9, minute=0),
+                           start_time=START_DATE.replace(day=12, month=8, hour=9, minute=0),
                            duration=9))
     return c
 
