@@ -1,0 +1,10 @@
+{
+  "include": [
+    "chick_cal"
+  ],
+  "exclude": [
+    "**/__pycache__"
+  ],
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": "none"
+}
