@@ -10,6 +10,7 @@ packages = [{include = "chick_cal"}]
 python = "^3.11"
 ics = "^0.7.2"
 requests = "^2.31.0"
+black = "^23.7.0"
 
 
 [tool.poetry.group.dev.dependencies]
