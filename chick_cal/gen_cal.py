@@ -1,10 +1,10 @@
 from datetime import timedelta
-from typing import Optional
+from typing import Optional, List
 
 import arrow
 from ics import Calendar, Event
-from ics.alarm import DisplayAlarm, BaseAlarm
-from collections.abc import Iterable
+from ics.alarm.base import BaseAlarm
+from ics.alarm import DisplayAlarm
 
 CLASS_TYPES = {0: "Workshop", 1: "01 Lecture", 2: "02 Tutorial"}
 
@@ -27,7 +27,7 @@ def gen_event(
     duration: int = 3,
     location: str = "Main Wing",
     class_type: int = 0,
-    alarms: Optional[Iterable[BaseAlarm]] = None,
+    alarms:Optional[List[BaseAlarm]] = None,
 ) -> Event:
     e = Event()
     e.name = name
@@ -35,13 +35,13 @@ def gen_event(
     if not all_day:
         e.duration = timedelta(hours=duration)
     else:
-        e.all_day = True
+        e.make_all_day()
+        # e.all_day = True
 
     e.description = desc + "\n" + CLASS_TYPES.get(class_type, "")
     e.location = location
     e.url = "https://www.psb-academy.edu.sg/wordpress/wp-content/uploads/2020/11/Tri-223-CU_FTBArts-BM-223_Term-1-Timetable.pdf"
-    if not alarms:
-        e.alarms = [DisplayAlarm(trigger=timedelta(hours=-1))]
+    e.alarms = alarms if alarms is not None else [DisplayAlarm(trigger=timedelta(hours=-1))]
     return e
 
 
@@ -439,13 +439,12 @@ def gen_duedates(c: Calendar) -> Calendar:
             name="Marketing Insight CW1 Due",
             desc="",
             location="",
-            start_time=arrow.get(2023, 8, 28, tzinfo="Asia/Singapore"),
+            start_time=arrow.get(2023, 8, 29, tzinfo="Asia/Singapore"),
             all_day=True,
             alarms=[
                 DisplayAlarm(trigger=timedelta(days=-7)),
                 DisplayAlarm(trigger=timedelta(days=-3)),
                 DisplayAlarm(trigger=timedelta(days=-1)),
-                DisplayAlarm(trigger=timedelta(days=0)),
             ],
         )
     )
@@ -454,13 +453,12 @@ def gen_duedates(c: Calendar) -> Calendar:
             name="Marketing Insight CW2 Due",
             desc="",
             location="",
-            start_time=arrow.get(2023, 10, 14, tzinfo="Asia/Singapore"),
+            start_time=arrow.get(2023, 10, 15, tzinfo="Asia/Singapore"),
             all_day=True,
             alarms=[
                 DisplayAlarm(trigger=timedelta(days=-7)),
                 DisplayAlarm(trigger=timedelta(days=-3)),
                 DisplayAlarm(trigger=timedelta(days=-1)),
-                DisplayAlarm(trigger=timedelta(days=0)),
             ],
         )
     )
@@ -469,13 +467,12 @@ def gen_duedates(c: Calendar) -> Calendar:
             name="Management and Leadership in Marketing CW Due",
             desc="",
             location="",
-            start_time=arrow.get(2023, 10, 11, tzinfo="Asia/Singapore"),
+            start_time=arrow.get(2023, 10, 12, tzinfo="Asia/Singapore"),
             all_day=True,
             alarms=[
                 DisplayAlarm(trigger=timedelta(days=-7)),
                 DisplayAlarm(trigger=timedelta(days=-3)),
                 DisplayAlarm(trigger=timedelta(days=-1)),
-                DisplayAlarm(trigger=timedelta(days=0)),
             ],
         )
     )
@@ -484,13 +481,12 @@ def gen_duedates(c: Calendar) -> Calendar:
             name="Digital Business CW1 Due",
             desc="",
             location="",
-            start_time=arrow.get(2023, 9, 11, tzinfo="Asia/Singapore"),
+            start_time=arrow.get(2023, 9, 12, tzinfo="Asia/Singapore"),
             all_day=True,
             alarms=[
                 DisplayAlarm(trigger=timedelta(days=-7)),
                 DisplayAlarm(trigger=timedelta(days=-3)),
                 DisplayAlarm(trigger=timedelta(days=-1)),
-                DisplayAlarm(trigger=timedelta(days=0)),
             ],
         )
     )
@@ -499,13 +495,12 @@ def gen_duedates(c: Calendar) -> Calendar:
             name="Digital Business CW2 Due",
             desc="",
             location="",
-            start_time=arrow.get(2023, 10, 3, tzinfo="Asia/Singapore"),
+            start_time=arrow.get(2023, 10, 4, tzinfo="Asia/Singapore"),
             all_day=True,
             alarms=[
                 DisplayAlarm(trigger=timedelta(days=-7)),
                 DisplayAlarm(trigger=timedelta(days=-3)),
                 DisplayAlarm(trigger=timedelta(days=-1)),
-                DisplayAlarm(trigger=timedelta(days=0)),
             ],
         )
     )
