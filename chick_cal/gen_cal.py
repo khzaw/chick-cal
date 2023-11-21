@@ -1,5 +1,6 @@
 from datetime import timedelta
-from typing import Optional, List
+from typing import Optional, List, overload, Union
+from enum import Enum
 
 import arrow
 from ics import Calendar, Event
@@ -7,16 +8,52 @@ from ics.alarm.base import BaseAlarm
 from ics.alarm import DisplayAlarm
 
 CLASS_TYPES = {0: "Workshop", 1: "01 Lecture", 2: "02 Tutorial"}
+TZ = "Asia/Singapore"
+SEM_PREFIX = r"CU_TRI323_FT"
+
+class ClassType(Enum):
+    WORKSHOP = '0'
+    LEC = '01 Lecture'
+    TUT = '02 Tutorial'
 
 
-def gen_name(code: str, idx: int, class_type: int) -> str:
-    PREFIX = f"CU_TRI223_FT_{code}_S{idx}_"
-    if class_type == 1:
+def gen_name(code: str, idx: int, ct: ClassType) -> str:
+    PREFIX = f"{SEM_PREFIX}_{code}_S{idx:02}_"
+    if ct == ClassType.LEC:
         return PREFIX + "Lec/1"
-    else:
+    elif ct == ClassType.TUT:
         if code.startswith("MI"):
             return PREFIX + "Tut_B"
+        if code.startswith("ECS2"):
+            return PREFIX.rstrip("_") + "A Tut A"
         return PREFIX + "Tut/1"
+    else:
+        return PREFIX + "Workshop"
+
+
+@overload
+def gen_event(
+        name: str,
+        desc: str,
+        start_time: arrow.Arrow,
+        all_day: bool = False,
+        duration: int = 3,
+        location: str = "Main Wing",
+        class_type: ClassType = ClassType.LEC,
+        alarms: Optional[List[BaseAlarm]] = None) -> Event:
+    ...
+
+@overload
+def gen_event(
+        name: str,
+        desc: str,
+        start_time: arrow.Arrow,
+        all_day: bool = False,
+        duration: int = 3,
+        location: str = "Main Wing",
+        class_type: int = 0,
+        alarms: Optional[List[BaseAlarm]] = None) -> Event:
+    ...
 
 
 def gen_event(
@@ -26,8 +63,8 @@ def gen_event(
     all_day: bool = False,
     duration: int = 3,
     location: str = "Main Wing",
-    class_type: int = 0,
-    alarms:Optional[List[BaseAlarm]] = None,
+    class_type: ClassType | int = ClassType.LEC,
+    alarms: List[BaseAlarm] | None = None,
 ) -> Event:
     e = Event()
     e.name = name
@@ -38,7 +75,10 @@ def gen_event(
         e.make_all_day()
         # e.all_day = True
 
-    e.description = desc + "\n" + CLASS_TYPES.get(class_type, "")
+    if isinstance(class_type, ClassType):
+        e.description = desc + "\n" + class_type.value
+    else:
+        e.description = desc + "\n" + CLASS_TYPES.get(class_type, "")
     e.location = location
     e.url = "https://www.psb-academy.edu.sg/wordpress/wp-content/uploads/2020/11/Tri-223-CU_FTBArts-BM-223_Term-1-Timetable.pdf"
     e.alarms = alarms if alarms is not None else [DisplayAlarm(trigger=timedelta(hours=-1))]
@@ -51,9 +91,10 @@ def gen_mi(c: Calendar):
         "Frank Boey Chong King",
         arrow.get(2023, 7, 24, tzinfo="Asia/Singapore").replace(hour=15, minute=30),
     )
+
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 1, 1),
+            name=gen_name(CODE, 1, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=25),
             class_type=1,
@@ -61,7 +102,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 2, 1),
+            name=gen_name(CODE, 2, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=1, month=8),
             class_type=1,
@@ -69,7 +110,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 3, 2),
+            name=gen_name(CODE, 3, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=8, month=8),
             class_type=2,
@@ -77,7 +118,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 4, 1),
+            name=gen_name(CODE, 4, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=14, month=8, hour=12, minute=0),
             class_type=1,
@@ -85,7 +126,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 5, 2),
+            name=gen_name(CODE, 5, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=15, month=8),
             class_type=2,
@@ -93,7 +134,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 6, 1),
+            name=gen_name(CODE, 6, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=21, month=8, hour=12, minute=0),
             class_type=1,
@@ -101,7 +142,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 7, 2),
+            name=gen_name(CODE, 7, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=22, month=8),
             class_type=2,
@@ -109,7 +150,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 8, 1),
+            name=gen_name(CODE, 8, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=29, month=8),
             class_type=1,
@@ -117,7 +158,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 9, 2),
+            name=gen_name(CODE, 9, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=5, month=9),
             class_type=2,
@@ -125,7 +166,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 10, 1),
+            name=gen_name(CODE, 10, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=12, month=9),
             class_type=1,
@@ -133,7 +174,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 11, 2),
+            name=gen_name(CODE, 11, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=19, month=9),
             class_type=2,
@@ -141,7 +182,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 12, 1),
+            name=gen_name(CODE, 12, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=26, month=9),
             class_type=1,
@@ -149,7 +190,7 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 13, 2),
+            name=gen_name(CODE, 13, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=3, month=10),
             class_type=2,
@@ -157,14 +198,13 @@ def gen_mi(c: Calendar):
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 14, 1),
+            name=gen_name(CODE, 14, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=10, month=10),
             class_type=1,
         )
     )
     return c
-
 
 def gen_mlm(c: Calendar) -> Calendar:
     CODE, l, START_DATE = (
@@ -174,12 +214,12 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 1, 1), desc=l, start_time=START_DATE, class_type=1
+            name=gen_name(CODE, 1, ClassType.LEC), desc=l, start_time=START_DATE, class_type=1
         )
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 2, 1),
+            name=gen_name(CODE, 2, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=2, month=8),
             class_type=1,
@@ -187,7 +227,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 3, 2),
+            name=gen_name(CODE, 3, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=11, month=8),
             class_type=2,
@@ -195,7 +235,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 4, 1),
+            name=gen_name(CODE, 4, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=16, month=8, hour=12, minute=0),
             class_type=1,
@@ -203,7 +243,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 5, 2),
+            name=gen_name(CODE, 5, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=23, month=8),
             class_type=2,
@@ -211,7 +251,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 6, 1),
+            name=gen_name(CODE, 6, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=28, month=8, hour=12, minute=0),
             class_type=1,
@@ -219,7 +259,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 7, 2),
+            name=gen_name(CODE, 7, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=30, month=8),
             class_type=2,
@@ -227,7 +267,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 8, 1),
+            name=gen_name(CODE, 8, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=6, month=9),
             class_type=1,
@@ -235,7 +275,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 9, 2),
+            name=gen_name(CODE, 9, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=8, month=9),
             class_type=2,
@@ -243,7 +283,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 10, 1),
+            name=gen_name(CODE, 10, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=13, month=9),
             class_type=1,
@@ -251,7 +291,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 11, 2),
+            name=gen_name(CODE, 11, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=20, month=9),
             class_type=2,
@@ -259,7 +299,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 12, 1),
+            name=gen_name(CODE, 12, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=27, month=9),
             class_type=1,
@@ -267,7 +307,7 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 13, 2),
+            name=gen_name(CODE, 13, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=4, month=10),
             class_type=2,
@@ -275,14 +315,13 @@ def gen_mlm(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 14, 1),
+            name=gen_name(CODE, 14, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=11, month=10),
             class_type=1,
         )
     )
     return c
-
 
 def gen_db(c: Calendar) -> Calendar:
     CODE, l, START_DATE = (
@@ -292,12 +331,12 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 1, 1), desc=l, start_time=START_DATE, class_type=1
+            name=gen_name(CODE, 1, ClassType.LEC), desc=l, start_time=START_DATE, class_type=1
         )
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 2, 1),
+            name=gen_name(CODE, 2, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=3, month=8),
             class_type=1,
@@ -305,23 +344,23 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 3, 2),
+            name=gen_name(CODE, 3, ClassType.TUT),
             desc=l,
-            start_time=START_DATE.replace(day=7, month=8),
+            start_time=START_DATE.replace(day=7, month=8, hour=12, minute=0),
             class_type=2,
         )
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 4, 1),
+            name=gen_name(CODE, 4, ClassType.LEC),
             desc=l,
-            start_time=START_DATE.replace(day=10, month=8, hour=12, minute=0),
+            start_time=START_DATE.replace(day=10, month=8),
             class_type=1,
         )
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 5, 2),
+            name=gen_name(CODE, 5, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=17, month=8),
             class_type=2,
@@ -329,15 +368,15 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 6, 1),
+            name=gen_name(CODE, 6, ClassType.LEC),
             desc=l,
-            start_time=START_DATE.replace(day=24, month=8, hour=12, minute=0),
+            start_time=START_DATE.replace(day=24, month=8),
             class_type=1,
         )
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 7, 2),
+            name=gen_name(CODE, 7, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=31, month=8),
             class_type=2,
@@ -345,15 +384,15 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 8, 1),
+            name=gen_name(CODE, 8, ClassType.LEC),
             desc=l,
-            start_time=START_DATE.replace(day=4, month=9),
+            start_time=START_DATE.replace(day=4, month=9, hour=12, minute=0),
             class_type=1,
         )
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 9, 2),
+            name=gen_name(CODE, 9, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=7, month=9),
             class_type=2,
@@ -361,7 +400,7 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 10, 1),
+            name=gen_name(CODE, 10, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=14, month=9),
             class_type=1,
@@ -369,7 +408,7 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 11, 2),
+            name=gen_name(CODE, 11, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=21, month=9),
             class_type=2,
@@ -377,7 +416,7 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 12, 1),
+            name=gen_name(CODE, 12, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=28, month=9),
             class_type=1,
@@ -385,7 +424,7 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 13, 2),
+            name=gen_name(CODE, 13, ClassType.TUT),
             desc=l,
             start_time=START_DATE.replace(day=5, month=10),
             class_type=2,
@@ -393,7 +432,7 @@ def gen_db(c: Calendar) -> Calendar:
     )
     c.events.add(
         gen_event(
-            name=gen_name(CODE, 14, 1),
+            name=gen_name(CODE, 14, ClassType.LEC),
             desc=l,
             start_time=START_DATE.replace(day=12, month=10),
             class_type=1,
@@ -401,6 +440,21 @@ def gen_db(c: Calendar) -> Calendar:
     )
     return c
 
+def gen_mm(c: Calendar) -> Calendar:
+    CODE, l, START_DATE = (
+        "MM(5010MKT)",
+        "Ng Siah Heng",
+        arrow.get(2023, 11, 20, tzinfo=TZ).replace(hour=12),
+    )
+
+    c.events.add(
+        gen_event(
+            name=gen_name(CODE, 1, ClassType.LEC),
+            desc=l,
+            start_time=START_DATE,
+            class_type=ClassType.LEC
+        )
+    )
 
 def gen_workshops(c: Calendar) -> Calendar:
     START_DATE = arrow.get(2023, 7, 24, tzinfo="Asia/Singapore").replace(
@@ -431,7 +485,6 @@ def gen_workshops(c: Calendar) -> Calendar:
         )
     )
     return c
-
 
 def gen_duedates(c: Calendar) -> Calendar:
     c.events.add(
@@ -506,22 +559,21 @@ def gen_duedates(c: Calendar) -> Calendar:
     )
     return c
 
-
-def gen_cal():
+def gen_first_sem() -> Calendar:
     c = Calendar()
-
     gen_workshops(c)
-
     gen_mi(c)  # MI(2007MK)
     gen_mlm(c)  # MLM(2000HR)
     gen_db(c)  # DB(2009MK)
-
     gen_duedates(c)
-
     return c
+
+def gen_second_sem() -> Calendar:
+    c = Calendar()
+    gen_mm(c) # MM(5010MKT)
 
 
 if __name__ == "__main__":
-    c = gen_cal()
+    c = gen_second_sem()
     with open("psb.ics", "w") as f:
         f.writelines(c.serialize_iter())
