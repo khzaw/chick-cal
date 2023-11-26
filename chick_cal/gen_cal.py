@@ -594,14 +594,6 @@ def gen_mm(c: Calendar):
             class_type=ClassType.LEC,
         )
     )
-    c.events.add(
-        gen_event(
-            name=gen_name(CODE, 13, ClassType.TUT),
-            desc=l,
-            start_time=jan.replace(day=22, hour=15, minute=30),
-            class_type=ClassType.TUT,
-        )
-    )
 
 
 def gen_ecs2(c: Calendar):
@@ -646,6 +638,7 @@ def gen_ecs2(c: Calendar):
             desc=l,
             start_time=d.replace(day=6, hour=15, minute=30),
             class_type=ClassType.LEC,
+            duration=2
         )
     )
     c.events.add(
@@ -745,7 +738,7 @@ def gen_cb(c: Calendar):
         gen_event(
             name=gen_name(CODE, 6, ClassType.LEC),
             desc=l,
-            start_time=START_DATE.replace(day=12, hour=12),
+            start_time=d.replace(day=12, hour=12),
             class_type=ClassType.LEC,
         )
     )
@@ -753,7 +746,7 @@ def gen_cb(c: Calendar):
         gen_event(
             name=gen_name(CODE, 7, ClassType.TUT),
             desc=l,
-            start_time=START_DATE.replace(day=13, hour=15, minute=30),
+            start_time=d.replace(day=13, hour=15, minute=30),
             class_type=ClassType.TUT,
         )
     )
@@ -909,6 +902,7 @@ def gen_cp(c: Calendar):
             desc=l,
             start_time=jan.replace(day=24, hour=15, minute=30),
             class_type=ClassType.LEC,
+            duration=2
         )
     )
 
@@ -1048,8 +1042,8 @@ def gen_second_sem() -> Calendar:
             gen_event(
                 name="Midterm Break",
                 desc="",
-                start_time=arrow.get(2023, 12, 18, tzinfo=TZ),
-                end_time=arrow.get(2023, 12, 22, tzinfo=TZ),
+                start_time=arrow.get(2023, 12, 19, tzinfo=TZ),
+                end_time=arrow.get(2023, 12, 24, tzinfo=TZ),
                 all_day=True,
             )
         )
@@ -1058,8 +1052,8 @@ def gen_second_sem() -> Calendar:
             gen_event(
                 name="PH Christmas Break",
                 desc="",
-                start_time=arrow.get(2023, 12, 26, tzinfo=TZ),
-                end_time=arrow.get(2023, 12, 30, tzinfo=TZ),
+                start_time=arrow.get(2023, 12, 27, tzinfo=TZ),
+                end_time=arrow.get(2024, 1, 1, tzinfo=TZ),
                 all_day=True,
             )
         )
@@ -1068,8 +1062,8 @@ def gen_second_sem() -> Calendar:
             gen_event(
                 name="Study Break",
                 desc="",
-                start_time=arrow.get(2024, 1, 29, tzinfo=TZ),
-                end_time=arrow.get(2024, 2, 8, tzinfo=TZ),
+                start_time=arrow.get(2024, 1, 30, tzinfo=TZ),
+                end_time=arrow.get(2024, 2, 10, tzinfo=TZ),
                 all_day=True,
             )
         )
@@ -1078,8 +1072,8 @@ def gen_second_sem() -> Calendar:
             gen_event(
                 name="Chinese New Year Break",
                 desc="",
-                start_time=arrow.get(2024, 2, 12, tzinfo=TZ),
-                end_time=arrow.get(2024, 2, 16, tzinfo=TZ),
+                start_time=arrow.get(2024, 2, 13, tzinfo=TZ),
+                end_time=arrow.get(2024, 2, 18, tzinfo=TZ),
                 all_day=True,
             )
         )
